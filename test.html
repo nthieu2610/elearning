@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<!-- Form Container -->
+		<div id="formContainer">
+			<div>
+				<label>Link:</label>
+				<input type="text" id="linkInput" placeholder="Enter the base link here..." />
+			</div>
+			<div>
+				<label>Token:</label>
+				<input type="text" id="tokenInput" placeholder="Enter the token here..." />
+			</div>
+			<div>
+				<label>UIID:</label>
+				<input type="text" id="uiidInput" placeholder="Enter the UIID here..." />
+			</div>
+			<div>
+				<label>UID:</label>
+				<input type="text" id="uidInput" placeholder="Enter the UID here..." />
+			</div>
+			<button onclick="constructURL()">Construct URL</button>
+		</div>
+
+		<!-- Display constructed URL here -->
+		<div id="output"></div>
+
+		<!-- Include your JS here -->
+		<script>
+			function constructURL() {
+				// Get user input values
+				const link = document.getElementById("linkInput").value;
+				const token = document.getElementById("tokenInput").value;
+				const uiid = document.getElementById("uiidInput").value;
+				const uid = document.getElementById("uidInput").value;
+
+				// Construct the full URL
+				const fullURL = `${link}&_sand_is_wan=false&_sand_ga_sessionToken=&_sand_ga_browserToken=&_sand_domain=ve&_sand_masked=&_sand_token=${token}&_sand_uiid=${uiid}&_sand_uid=${uid}`;
+
+				// Display the constructed URL
+				fetch(fullURL)
+					.then((response) => response.json())
+					.then((data) => {
+						// Extract questions and answers
+						const questions = data.result.children[0].children;
+
+						// Get a reference to the output div
+						const output = document.getElementById("output");
+
+						// Display each question and its correct answer
+						questions.forEach((question, index) => {
+							output.innerHTML += "Question " + (index + 1) + ": " + question.content + "<br>";
+							output.innerHTML +=
+								"Correct Answer " +
+								(Number(question.answers) + 1) +
+								": " +
+								question.answers2.find((answer2) => answer2.is_answer === 1).text +
+								"<br>";
+							output.innerHTML += "----------------------<br>";
+						});
+
+						// Hide the form
+						document.getElementById("formContainer").style.display = "none";
+					})
+					.catch((error) => {
+						console.error("Error:", error);
+					});
+			}
+		</script>
+	</body>
+</html>
