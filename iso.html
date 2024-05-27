@@ -5,6 +5,20 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Document</title>
+		<style>
+			th,
+			td {
+				padding: 8px;
+				text-align: left;
+			}
+
+			/* Set the width of the columns from the 3rd to the 9th to 15 characters */
+			th:nth-child(n + 3):nth-child(-n + 9),
+			td:nth-child(n + 3):nth-child(-n + 9) {
+				width: 15ch;
+				word-break: break-word;
+			}
+		</style>
 	</head>
 	<body>
 		<!-- Form Container -->
