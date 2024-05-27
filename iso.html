@@ -9,75 +9,62 @@
 	<body>
 		<!-- Form Container -->
 		<div id="formContainer">
-		<table border="1">
-    <tr>
-        <th>Nội dung</th>
-        <th>Nhập thông tin</th>
-        <th>Cuu</th>
-        <th>Dinh</th>
-        <th>Duc</th>
-        <th>Yen</th>
-        <th>Luyen</th>
-        <th>Vu</th>
-        <th>Hieu</th>
-    </tr>
-    <tr>
-        <td>Link:</td>
-        <td><input type="text" id="linkInput" placeholder="Enter the base link here..." /></td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-    </tr>
-    <tr>
-        <td>Token:</td>
-        <td><input type="text" id="tokenInput" placeholder="Enter the token here..." /></td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-    </tr>
-    <tr>
-        <td>UIID:</td>
-        <td><input type="text" id="uiidInput" placeholder="Enter the UIID here..." /></td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-    </tr>
-    <tr>
-        <td>UID:</td>
-        <td><input type="text" id="uidInput" placeholder="Enter the UID here..." /></td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-    </tr>
-    <tr>
-        <td colspan="2"><button onclick="constructURL()">Construct URL</button></td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-        <td>...text...</td>
-    </tr>
-</table>
+			<table border="1">
+				<tr>
+					<th>Nội dung</th>
+					<th>Nhập thông tin</th>
+					<th><button onclick="copyValues('Cuu')">Cuu</button></th>
+					<th><button onclick="copyValues('Dinh')">Dinh</button></th>
+					<th><button onclick="copyValues('Duc')">Duc</button></th>
+					<th><button onclick="copyValues('Yen')">Yen</button></th>
+					<th><button onclick="copyValues('Luyen')">Luyen</button></th>
+					<th><button onclick="copyValues('Vu')">Vu</button></th>
+					<th><button onclick="copyValues('Hieu')">Hieu</button></th>
+				</tr>
+				<tr>
+					<td>Link:</td>
+					<td><input type="text" id="linkInput" placeholder="Enter the base link here..." /></td>
+					<td colspan="7">
+						Ctrl+Shift+I > Network > Vào Cuộc thi > Tìm link bắt đầu = load-paper?syllabus > Chuột
+						phải, copy, copy url rồi dán vào ô bên cạnh
+					</td>
+				</tr>
+				<tr>
+					<td>Token:</td>
+					<td><input type="text" id="tokenInput" placeholder="Enter the token here..." /></td>
+					<td name="Cuu">...text...</td>
+					<td name="Dinh">eea84_IXQxz</td>
+					<td name="Duc">...text...</td>
+					<td name="Yen">b423d_WsFQi</td>
+					<td name="Luyen">e9aee_yIjWM</td>
+					<td name="Vu">67ff9_n7Ep8</td>
+					<td name="Hieu">2705a_F2x6X</td>
+				</tr>
+				<tr>
+					<td>UIID:</td>
+					<td><input type="text" id="uiidInput" placeholder="Enter the UIID here..." /></td>
+					<td name="Cuu">...text...</td>
+					<td name="Dinh">116721</td>
+					<td name="Duc">...text...</td>
+					<td name="Yen">116716</td>
+					<td name="Luyen">215871</td>
+					<td name="Vu">116958</td>
+					<td name="Hieu">116934</td>
+				</tr>
+				<tr>
+					<td>UID:</td>
+					<td><input type="text" id="uidInput" placeholder="Enter the UID here..." /></td>
+					<td name="Cuu">...text...</td>
+					<td name="Dinh">5b59903d7518cd05ef674032</td>
+					<td name="Duc">...text...</td>
+					<td name="Yen">5b59903a7518cd05e33efb22</td>
+					<td name="Luyen">656f4f472cc519180b62ab30</td>
+					<td name="Vu">5b5990d57518cd0c9e3b9022</td>
+					<td name="Hieu">5b5990c97518cd0b9d4c7802</td>
+				</tr>
+			</table>
 
-			<button onclick="constructURL()">Construct URL</button>
+			<button onclick="constructURL()">Lấy kết quả</button>
 		</div>
 
 		<!-- Display constructed URL here -->
@@ -87,10 +74,10 @@
 		<script>
 			function constructURL() {
 				// Get user input values
-				const link = document.getElementById("linkInput").value;
-				const token = document.getElementById("tokenInput").value;
-				const uiid = document.getElementById("uiidInput").value;
-				const uid = document.getElementById("uidInput").value;
+				const link = document.getElementById('linkInput').value;
+				const token = document.getElementById('tokenInput').value;
+				const uiid = document.getElementById('uiidInput').value;
+				const uid = document.getElementById('uidInput').value;
 
 				// Construct the full URL
 				const fullURL = `${link}&_sand_is_wan=false&_sand_ga_sessionToken=&_sand_ga_browserToken=&_sand_domain=ve&_sand_masked=&_sand_token=${token}&_sand_uiid=${uiid}&_sand_uid=${uid}`;
@@ -103,19 +90,30 @@
 						const questions = data.result.children[0].children;
 
 						// Get a reference to the output div
-						const output = document.getElementById("output");
+						const output = document.getElementById('output');
 
 						// Display each question and its correct answer
 						questions.forEach((question, index) => {
-							output.innerHTML += (index + 1) + ":" +	(Number(question.answers) + 1) + " - ";
+							output.innerHTML += index + 1 + ':' + (Number(question.answers) + 1) + ' - ';
 						});
 
 						// Hide the form
-						document.getElementById("formContainer").style.display = "none";
+						document.getElementById('formContainer').style.display = 'none';
 					})
 					.catch((error) => {
-						console.error("Error:", error);
+						console.error('Error:', error);
 					});
+			}
+
+			function copyValues(columnName) {
+				const rows = document.querySelectorAll('table tr');
+				const tokenCell = rows[2].querySelector(`td[name='${columnName}']`).textContent;
+				const uiidCell = rows[3].querySelector(`td[name='${columnName}']`).textContent;
+				const uidCell = rows[4].querySelector(`td[name='${columnName}']`).textContent;
+
+				document.getElementById('tokenInput').value = tokenCell;
+				document.getElementById('uiidInput').value = uiidCell;
+				document.getElementById('uidInput').value = uidCell;
 			}
 		</script>
 	</body>
