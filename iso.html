@@ -2,152 +2,181 @@
 <html lang="vi">
 	<head>
 		<meta charset="UTF-8" />
-		<title>ISO</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Payload → URL → Kết quả</title>
 		<style>
-			/* Trang trắng, tối giản */
-			html,
+			/* Tối giản: không màu mè */
 			body {
-				background: #fff;
-				color: #111;
-				font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-				margin: 0;
+				font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+				margin: 16px;
 			}
-			.wrap {
-				max-width: 900px;
-				margin: 24px auto;
-				padding: 0 16px;
-			}
-			textarea,
-			input,
-			button {
-				font: inherit;
+			#output {
+				display: none;
+				white-space: pre-wrap;
 			}
 			textarea,
 			input {
 				width: 100%;
-				box-sizing: border-box;
-				padding: 10px;
-				border: 1px solid #ccc;
-				border-radius: 6px;
 			}
 			textarea {
 				min-height: 200px;
 			}
 			button {
-				margin-top: 10px;
-				padding: 10px 14px;
-				border: 1px solid #ccc;
-				border-radius: 6px;
-				background: #f7f7f7;
-				cursor: pointer;
-			}
-			.muted {
-				color: #666;
+				margin-top: 8px;
+				padding: 8px 12px;
 			}
 		</style>
 	</head>
 	<body>
-		<div class="wrap" id="formContainer">
-			<div style="margin-bottom: 8px" class="muted">
+		<div id="formContainer">
+			<h1>Nhập thông tin</h1>
+			<p>
 				Ctrl+Shift+I > Network > Vào Cuộc thi (chưa bấm bắt đầu làm bài) > Làm theo hướng dẫn và dán
 				phần copy trong payload vào ô bên dưới.
-			</div>
-			<input id="baseUrl" hidden value="https://elearning-api.evn.com.vn/paper/api/load-paper" />
+			</p>
 			<textarea id="payload"></textarea>
-			<button id="btnSend">Lấy kết quả</button>
+			<div hidden>
+				<p>Nếu parser không lấy được 3 khóa sau, bạn có thể điền tay:</p>
+				<input id="override_token" placeholder="_sand_token" />
+				<input id="override_uiid" placeholder="_sand_uiid" />
+				<input id="override_uid" placeholder="_sand_uid" />
+			</div>
+
+			<button id="btn">Lấy kết quả</button>
+			<div id="diag"></div>
 			<div>
 				<img src="https://i.ibb.co/MDqzm9NF/iso.png" border="0" />
 			</div>
-			<div id="status" class="muted" style="margin-top: 6px"></div>
 		</div>
 
+		<div id="output"></div>
+
 		<script>
+			const BASE_URL = 'https://elearning-api.evn.com.vn/paper/api/load-paper';
+			const REQUIRED_KEYS = [
+				'syllabus_iid',
+				'is_testing',
+				'exam_order',
+				'ciid',
+				'submit',
+				'_sand_ajax',
+				'_sand_platform',
+				'_sand_readmin',
+				'_sand_is_wan',
+				'_sand_token',
+				'_sand_uiid',
+				'_sand_uid',
+			];
+			const KNOWN_KEYS = [
+				...REQUIRED_KEYS,
+				'_sand_ga_sessionToken',
+				'_sand_ga_browserToken',
+				'_sand_domain',
+				'_sand_masked',
+			];
+			const isLikelyKey = (s) => KNOWN_KEYS.includes(String(s || '').trim());
+
 			function parseKeyValuePayload(text) {
-				const lines = text.replace(/\r/g, '').split('\n');
+				const lines = String(text).replace(/\r/g, '').split('\n');
 				const obj = {};
 				let i = 0;
-				while (i < lines.length && lines[i].trim() === '') i++;
+				while (i < lines.length && lines[i].trim() === '') i++; // bỏ trống đầu
 				while (i < lines.length) {
 					const key = (lines[i] || '').trim();
 					if (!key) {
 						i++;
 						continue;
 					}
-					const val = i + 1 < lines.length ? lines[i + 1] : '';
+					let j = i + 1;
+					let val = '';
+					if (j < lines.length) {
+						let cand = lines[j];
+						if (cand === '') {
+							// bỏ qua dòng trống giữa key và value, trừ khi gặp key kế
+							let k = j + 1;
+							while (k < lines.length && lines[k] === '') k++;
+							if (k < lines.length && isLikelyKey(lines[k].trim())) {
+								val = '';
+								j = k;
+							} else if (k < lines.length) {
+								val = lines[k];
+								j = k + 1;
+							} else {
+								val = '';
+								j = k;
+							}
+						} else if (isLikelyKey(cand.trim())) {
+							val = '';
+						} else {
+							val = cand;
+							j = j + 1;
+						}
+					}
 					obj[key] = val;
-					i += 2;
+					i = j;
 				}
 				return obj;
 			}
 
-			function escapeHtml(s) {
-				return String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
-			}
+			document.getElementById('btn').addEventListener('click', async () => {
+				const baseUrl = BASE_URL;
+				const raw = document.getElementById('payload').value || '';
+				const oToken = document.getElementById('override_token').value.trim();
+				const oUiid = document.getElementById('override_uiid').value.trim();
+				const oUid = document.getElementById('override_uid').value.trim();
 
-			document.getElementById('btnSend').onclick = () => {
-				const baseUrl = document.getElementById('baseUrl').value.trim();
-				const payload = document.getElementById('payload').value;
-				const status = document.getElementById('status');
-				status.textContent = '';
-				if (!baseUrl || !payload) {
-					status.textContent = 'Thiếu URL hoặc payload';
-					return;
-				}
+				const form = parseKeyValuePayload(raw);
+				if (oToken) form._sand_token = oToken;
+				if (oUiid) form._sand_uiid = oUiid;
+				if (oUid) form._sand_uid = oUid;
 
-				const form = parseKeyValuePayload(payload);
-				const REQUIRED_KEYS = [
-					'syllabus_iid',
-					'is_testing',
-					'exam_order',
-					'ciid',
-					'submit',
-					'_sand_ajax',
-					'_sand_platform',
-					'_sand_readmin',
-					'_sand_is_wan',
-					'_sand_token',
-					'_sand_uiid',
-					'_sand_uid',
-				];
 				const params = new URLSearchParams();
-				REQUIRED_KEYS.forEach((k) => {
-					if (Object.prototype.hasOwnProperty.call(form, k))
-						params.append(k, String(form[k] ?? ''));
-				});
-				const qs = params.toString();
-				const fullURL = baseUrl + (qs ? '?' + qs : '?');
+				const missing = [];
+				for (const k of REQUIRED_KEYS) {
+					const v = (form[k] ?? '').toString();
+					if (!v && (k === '_sand_token' || k === '_sand_uiid' || k === '_sand_uid'))
+						missing.push(k);
+					params.append(k, v);
+				}
 
-				if (!qs) {
-					status.textContent = 'Không tìm thấy các khóa bắt buộc trong payload.';
+				const fullURL = baseUrl + '?' + params.toString();
+
+				const output = document.getElementById('output');
+				const formDiv = document.getElementById('formContainer');
+				const diag = document.getElementById('diag');
+				diag.textContent = '';
+
+				if (missing.length) {
+					formDiv.style.display = 'none';
+					output.style.display = 'block';
+					output.textContent = 'Thiếu khóa: ' + missing.join(', ');
 					return;
 				}
 
-				fetch(fullURL, { method: 'POST' })
-					.then((r) => r.json())
-					.then((data) => {
-						const qs = data?.result?.children?.[0]?.children || [];
-						const parts = [];
-						for (let i = 0; i < qs.length; i++) {
-							const a = Number(qs[i]?.answers);
-							parts.push(`${i + 1}:${isFinite(a) ? a + 1 : '?'}`);
-						}
-						const text = parts.join(' - ') + ' - ';
-						const body = `<div style="font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111;background:#fff;margin:0;padding:24px">${escapeHtml(
-							text
-						)}</div>`;
-						document.open();
-						document.write(`<!doctype html><meta charset="utf-8">${body}`);
-						document.close();
-					})
-					.catch((err) => {
-						const body = `<pre style="white-space:pre-wrap;word-break:break-word;font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111;background:#fff;margin:0;padding:24px">Lỗi: ${escapeHtml(
-							err.message || String(err)
-						)}</pre>`;
-						document.open();
-						document.write(`<!doctype html><meta charset="utf-8">${body}`);
-						document.close();
-					});
-			};
+				try {
+					const res = await fetch(fullURL); // GET đơn giản
+					const data = await res.json();
+					const questions = data?.result?.children?.[0]?.children;
+					if (!Array.isArray(questions) || !questions.length) {
+						formDiv.style.display = 'none';
+						output.style.display = 'block';
+						output.textContent = 'Không tìm thấy danh sách câu hỏi trong JSON.';
+						return;
+					}
+					const parts = [];
+					for (let i = 0; i < questions.length; i++) {
+						const a = Number(questions[i]?.answers);
+						parts.push(`${i + 1}:${Number.isFinite(a) ? a + 1 : '?'}`);
+					}
+					formDiv.style.display = 'none';
+					output.style.display = 'block';
+					output.textContent = parts.join(' - ') + ' - ';
+				} catch (err) {
+					formDiv.style.display = 'none';
+					output.style.display = 'block';
+					output.textContent = 'Lỗi: ' + (err && err.message ? err.message : String(err));
+				}
+			});
 		</script>
 	</body>
 </html>
