@@ -1,135 +1,153 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 	<head>
 		<meta charset="UTF-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Document</title>
+		<title>ISO</title>
 		<style>
-			th,
-			td {
-				padding: 8px;
-				text-align: left;
+			/* Trang trắng, tối giản */
+			html,
+			body {
+				background: #fff;
+				color: #111;
+				font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+				margin: 0;
 			}
-
-			/* Set the width of the columns from the 3rd to the 9th to 15 characters */
-			th:nth-child(n + 3):nth-child(-n + 9),
-			td:nth-child(n + 3):nth-child(-n + 9) {
-				width: 15ch;
-				word-break: break-word;
+			.wrap {
+				max-width: 900px;
+				margin: 24px auto;
+				padding: 0 16px;
+			}
+			textarea,
+			input,
+			button {
+				font: inherit;
+			}
+			textarea,
+			input {
+				width: 100%;
+				box-sizing: border-box;
+				padding: 10px;
+				border: 1px solid #ccc;
+				border-radius: 6px;
+			}
+			textarea {
+				min-height: 200px;
+			}
+			button {
+				margin-top: 10px;
+				padding: 10px 14px;
+				border: 1px solid #ccc;
+				border-radius: 6px;
+				background: #f7f7f7;
+				cursor: pointer;
+			}
+			.muted {
+				color: #666;
 			}
 		</style>
 	</head>
 	<body>
-		<!-- Form Container -->
-		<div id="formContainer">
-			<table border="1">
-				<tr>
-					<th>Nội dung</th>
-					<th>Nhập thông tin</th>
-					<th><button onclick="copyValues('Cuu')">Cuu</button></th>
-					<th><button onclick="copyValues('Dinh')">Dinh</button></th>
-					<th><button onclick="copyValues('Duc')">Duc</button></th>
-					<th><button onclick="copyValues('Yen')">Yen</button></th>
-					<th><button onclick="copyValues('Luyen')">Luyen</button></th>
-					<th><button onclick="copyValues('Vu')">Vu</button></th>
-					<th><button onclick="copyValues('Hieu')">Hieu</button></th>
-				</tr>
-				<tr>
-					<td>Link:</td>
-					<td><input type="text" id="linkInput" placeholder="Enter the base link here..." /></td>
-					<td colspan="7">
-						Ctrl+Shift+I > Network > Vào Cuộc thi > Tìm link bắt đầu = load-paper?syllabus > Chuột
-						phải, copy, copy url rồi dán vào ô bên cạnh
-					</td>
-				</tr>
-				<tr>
-					<td>Token:</td>
-					<td><input type="text" id="tokenInput" placeholder="Enter the token here..." /></td>
-					<td name="Cuu">0a22b_E4UDH</td>
-					<td name="Dinh">eea84_IXQxz</td>
-					<td name="Duc">dc1ce_tWxqt</td>
-					<td name="Yen">b423d_WsFQi</td>
-					<td name="Luyen">e9aee_ezxHu</td>
-					<td name="Vu">67ff9_n7Ep8</td>
-					<td name="Hieu">2705a_F2x6X</td>
-				</tr>
-				<tr>
-					<td>UIID:</td>
-					<td><input type="text" id="uiidInput" placeholder="Enter the UIID here..." /></td>
-					<td name="Cuu">116697</td>
-					<td name="Dinh">116721</td>
-					<td name="Duc">116724</td>
-					<td name="Yen">116716</td>
-					<td name="Luyen">215871</td>
-					<td name="Vu">116958</td>
-					<td name="Hieu">116934</td>
-				</tr>
-				<tr>
-					<td>UID:</td>
-					<td><input type="text" id="uidInput" placeholder="Enter the UID here..." /></td>
-					<td name="Cuu">5b5990327518cd04bf5ac4a2</td>
-					<td name="Dinh">5b59903d7518cd05ef674032</td>
-					<td name="Duc">5b59903f7518cd05f8609c22</td>
-					<td name="Yen">5b59903a7518cd05e33efb22</td>
-					<td name="Luyen">656f4f472cc519180b62ab30</td>
-					<td name="Vu">5b5990d57518cd0c9e3b9022</td>
-					<td name="Hieu">5b5990c97518cd0b9d4c7802</td>
-				</tr>
-			</table>
-
-			<button onclick="constructURL()">Lấy kết quả</button>
-						<img src="https://i.imgur.com/D8yePIx.jpeg" alt="" />
+		<div class="wrap" id="formContainer">
+			<div style="margin-bottom: 8px" class="muted">
+				Ctrl+Shift+I > Network > Vào Cuộc thi (chưa bấm bắt đầu làm bài) > Làm theo hướng dẫn và dán
+				phần copy trong payload vào ô bên dưới.
+			</div>
+			<input id="baseUrl" hidden value="https://elearning-api.evn.com.vn/paper/api/load-paper" />
+			<textarea id="payload"></textarea>
+			<button id="btnSend">Lấy kết quả</button>
+			<div>
+				<img src="https://i.ibb.co/MDqzm9NF/iso.png" border="0" />
+			</div>
+			<div id="status" class="muted" style="margin-top: 6px"></div>
 		</div>
 
-		<!-- Display constructed URL here -->
-		<div id="output"></div>
-
-		<!-- Include your JS here -->
 		<script>
-			function constructURL() {
-				// Get user input values
-				const link = document.getElementById('linkInput').value;
-				const token = document.getElementById('tokenInput').value;
-				const uiid = document.getElementById('uiidInput').value;
-				const uid = document.getElementById('uidInput').value;
+			function parseKeyValuePayload(text) {
+				const lines = text.replace(/\r/g, '').split('\n');
+				const obj = {};
+				let i = 0;
+				while (i < lines.length && lines[i].trim() === '') i++;
+				while (i < lines.length) {
+					const key = (lines[i] || '').trim();
+					if (!key) {
+						i++;
+						continue;
+					}
+					const val = i + 1 < lines.length ? lines[i + 1] : '';
+					obj[key] = val;
+					i += 2;
+				}
+				return obj;
+			}
 
-				// Construct the full URL
-				const fullURL = `${link}&_sand_is_wan=false&_sand_ga_sessionToken=&_sand_ga_browserToken=&_sand_domain=ve&_sand_masked=&_sand_token=${token}&_sand_uiid=${uiid}&_sand_uid=${uid}`;
+			function escapeHtml(s) {
+				return String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+			}
 
-				// Display the constructed URL
-				fetch(fullURL)
-					.then((response) => response.json())
+			document.getElementById('btnSend').onclick = () => {
+				const baseUrl = document.getElementById('baseUrl').value.trim();
+				const payload = document.getElementById('payload').value;
+				const status = document.getElementById('status');
+				status.textContent = '';
+				if (!baseUrl || !payload) {
+					status.textContent = 'Thiếu URL hoặc payload';
+					return;
+				}
+
+				const form = parseKeyValuePayload(payload);
+				const REQUIRED_KEYS = [
+					'syllabus_iid',
+					'is_testing',
+					'exam_order',
+					'ciid',
+					'submit',
+					'_sand_ajax',
+					'_sand_platform',
+					'_sand_readmin',
+					'_sand_is_wan',
+					'_sand_token',
+					'_sand_uiid',
+					'_sand_uid',
+				];
+				const params = new URLSearchParams();
+				REQUIRED_KEYS.forEach((k) => {
+					if (Object.prototype.hasOwnProperty.call(form, k))
+						params.append(k, String(form[k] ?? ''));
+				});
+				const qs = params.toString();
+				const fullURL = baseUrl + (qs ? '?' + qs : '?');
+
+				if (!qs) {
+					status.textContent = 'Không tìm thấy các khóa bắt buộc trong payload.';
+					return;
+				}
+
+				fetch(fullURL, { method: 'POST' })
+					.then((r) => r.json())
 					.then((data) => {
-						// Extract questions and answers
-						const questions = data.result.children[0].children;
-
-						// Get a reference to the output div
-						const output = document.getElementById('output');
-
-						// Display each question and its correct answer
-						questions.forEach((question, index) => {
-							output.innerHTML += index + 1 + ':' + (Number(question.answers) + 1) + ' - ';
-						});
-
-						// Hide the form
-						document.getElementById('formContainer').style.display = 'none';
+						const qs = data?.result?.children?.[0]?.children || [];
+						const parts = [];
+						for (let i = 0; i < qs.length; i++) {
+							const a = Number(qs[i]?.answers);
+							parts.push(`${i + 1}:${isFinite(a) ? a + 1 : '?'}`);
+						}
+						const text = parts.join(' - ') + ' - ';
+						const body = `<div style="font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111;background:#fff;margin:0;padding:24px">${escapeHtml(
+							text
+						)}</div>`;
+						document.open();
+						document.write(`<!doctype html><meta charset="utf-8">${body}`);
+						document.close();
 					})
-					.catch((error) => {
-						console.error('Error:', error);
+					.catch((err) => {
+						const body = `<pre style="white-space:pre-wrap;word-break:break-word;font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111;background:#fff;margin:0;padding:24px">Lỗi: ${escapeHtml(
+							err.message || String(err)
+						)}</pre>`;
+						document.open();
+						document.write(`<!doctype html><meta charset="utf-8">${body}`);
+						document.close();
 					});
-			}
-
-			function copyValues(columnName) {
-				const rows = document.querySelectorAll('table tr');
-				const tokenCell = rows[2].querySelector(`td[name='${columnName}']`).textContent;
-				const uiidCell = rows[3].querySelector(`td[name='${columnName}']`).textContent;
-				const uidCell = rows[4].querySelector(`td[name='${columnName}']`).textContent;
-
-				document.getElementById('tokenInput').value = tokenCell;
-				document.getElementById('uiidInput').value = uiidCell;
-				document.getElementById('uidInput').value = uidCell;
-			}
+			};
 		</script>
 	</body>
 </html>
